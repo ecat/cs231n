@@ -1,4 +1,5 @@
-data_path = 'scan2/kspace';
+%% script to load a knee image and see coil sensitivities
+data_path = 'data/scan2/kspace';
 
 ksp = readReconData(data_path);
 
@@ -24,10 +25,7 @@ end
 figure; imshow3s(cat(1, im_coils_1, im_coils_2));
 
 %% https://mrirecon.github.io/bart/examples.html
-calib_size = 10;
-calib_mask = zeros(ny, nz); % create calibration mask in yz plane, x is readout fully sampled
-calib_mask(ny/2 - calib_size + 1: ny/2 + calib_size, nz/2 - calib_size + 1: nz/2 + calib_size) = 1;
-calib_mask = reshape(calib_mask, [1 ny nz 1]);
+calib_mask = get_calib_mask(ny, nz, calib_size, [1 ny nz 1]);
 ksp_calib = bsxfun(@times, ksp, calib_mask);
 
 %%
@@ -43,7 +41,6 @@ for ii = 1:nc/2
 end
 
 calib_3_saggital = cat(1, calib_1, calib_2);
-
 calib_3_axial = permute(cat(3, calib_1, calib_2), [2 3 1 4]);
 
 figure; imshow3s(calib_3_saggital)
