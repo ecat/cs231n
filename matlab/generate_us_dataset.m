@@ -5,7 +5,7 @@ data_label = struct();
 data_label.folder = 'scan2';
 
 data_path = ['data/' data_label.folder '/kspace'];
-save_path = 'data/tmp/';
+save_path = '../python/data/';
 
 generate_real_data = true;
 do_save = true;
