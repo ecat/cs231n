@@ -1,10 +1,10 @@
 %% script to load a knee image and see coil sensitivities
+addPaths()
 data_path = 'data/scan2/kspace';
 
 ksp = readReconData(data_path);
 
 %%
-addpath utils/
 [nx, ny, nz, nc] = size(ksp);
 
 im_coils = ifft3c(ksp);

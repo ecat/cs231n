@@ -4,6 +4,11 @@ function [ calib_mask ] = get_calib_mask( ny, nz, calib_size, output_dims )
 %   nz
 % calib_size
 % output_dims = -1 or 0 to keep default
+    if(nargin < 4)
+        output_dims = -1;
+    end
+        
+
     calib_mask = zeros(ny, nz); 
     calib_mask(ny/2 - calib_size/2 + 1: ny/2 + calib_size/2, nz/2 - calib_size/2 + 1: nz/2 + calib_size/2) = 1;
     
