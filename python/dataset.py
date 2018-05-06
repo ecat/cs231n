@@ -13,12 +13,8 @@ def get_dataset(scan_number):
 
 	im_ref = np.real(cfl.readcfl(path_ref)).astype(np.float32)
 	im_us = np.real(cfl.readcfl(path_us)).astype(np.float32)
+    
+	im_ref = im_ref[:, :, :, np.newaxis] # put into format (samples, rows, cols, channels)
 
-	# https://www.tensorflow.org/programmers_guide/datasets
 
-	im_us_placeholder = tf.placeholder(im_us.dtype, im_us.shape)
-	im_ref_placeholder = tf.placeholder(im_ref.dtype, im_ref.shape)
-
-	dataset = tf.data.Dataset.from_tensor_slices((im_us_placeholder, im_ref_placeholder))
-
-	return (dataset, im_ref, im_us)
+	return (im_ref, im_us)
