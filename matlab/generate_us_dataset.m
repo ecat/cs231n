@@ -8,7 +8,12 @@ for folder = folder_names
     data_label = struct();
     data_label.folder = folder{1};
 
-    data_path = ['data/' data_label.folder '/kspace'];
+    if(strcmp(folder{1}, 'scan1'))
+        data_path = ['data/' data_label.folder '/p1/e1/s1/kspace']; % scan1 has a special directory path...
+    else
+        data_path = ['data/' data_label.folder '/kspace'];
+    end
+    
     save_path = '../python/data/';
 
     generate_real_data = true;
@@ -67,6 +72,9 @@ for folder = folder_names
 
     if(do_save)
         display('saving data')
+        display('output sizes')
+        size(im_us)
+        size(im_ref)
         writeReconData(save_path_us, im_us);
         writeReconData(save_path_ref, im_ref);
     end

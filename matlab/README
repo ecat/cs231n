@@ -1,0 +1,13 @@
+Instructions to download and generate dataset:
+
+Make an empty data folder
+
+In matlab folder in shell, 
+
+> bash download_knees.sh
+> bash unzip_knees.sh
+
+In matlab
+
+> generate_us_dataset
+
