@@ -1,10 +1,16 @@
 %% load ksp data
 addPaths()
-folder_names = {'scan1', 'scan2'};
+folder_names = {};
+for ii = 1:10
+    folder_names = cat(2, folder_names, ['scan' num2str(ii)]);
+end
 
+display(folder_names)
+
+%%
 for folder = folder_names
-
-    disp(folder)
+    
+    display(folder)
     data_label = struct();
     data_label.folder = folder{1};
 
