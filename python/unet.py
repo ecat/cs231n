@@ -60,11 +60,27 @@ class UNet:
         return tf.slice(layer1, offsets, sizes)
 
     def train(self, X_train, y_train, optimizer='adam', loss='mean_squared_error', metrics=['mse']):
+        
+        ## example from https://keras.io/callbacks/
+        class LossHistory(tf.keras.callbacks.Callback):
+            def on_train_begin(self, logs={}):
+                self.losses = []
+
+            def on_batch_end(self, batch, logs={}):
+                self.losses.append(logs.get('loss'))
+                
+        history = LossHistory()
+        
         self._model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
-        self._model.fit(x=X_train, y=y_train)
+        self._model.fit(x=X_train, y=y_train, callbacks=[history])
+        
+        return history
 
     def eval(self, inputs):
         return self.model(inputs)
+    
+    def predict(self, inputs):
+        return self.model.predict(inputs)
 
     def __call__(self, inputs):
         '''
