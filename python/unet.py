@@ -59,7 +59,7 @@ class UNet:
         sizes = [-1, layer2.shape[1], layer2.shape[2], -1]
         return tf.slice(layer1, offsets, sizes)
 
-    def train(self, X_train, y_train, optimizer='adam', loss='mean_squared_error', metrics=['mse']):
+    def train(self, X_train, y_train, optimizer='adam', loss='mean_squared_error', metrics=['mse'], epochs=1):
         
         ## example from https://keras.io/callbacks/
         class LossHistory(tf.keras.callbacks.Callback):
@@ -72,7 +72,7 @@ class UNet:
         history = LossHistory()
         
         self._model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
-        self._model.fit(x=X_train, y=y_train, callbacks=[history])
+        self._model.fit(x=X_train, y=y_train, callbacks=[history], epochs=epochs)
         
         return history
 
