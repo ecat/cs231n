@@ -24,15 +24,14 @@ def gen_layer(name):
 
     class Layer:
         def __init__(self, *args, **kwargs):
-            self.__name__ = name.replace('un','')
+            self.__name__ = name
             self.args = args
             self.kwargs = kwargs
 
-            if name in layermap:
-                self._undo = False
-            else:
-                # This is an undo layer, e.g. unconv
+            if name[0:2] == 'un':
                 self._undo = True
+            else:
+                self._undo = False
 
             self.fun = layermap[name]
 

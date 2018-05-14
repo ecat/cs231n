@@ -24,6 +24,7 @@ class UNet:
         shapes = []
         self._lvals[(lvl, False)] = x
         for l in self.layers:
+            print(l.name)
             if l.name.replace('un', '') == shortcuts.maxpool.name:
                 if l.undo:
                     lvl -= 1
@@ -33,10 +34,14 @@ class UNet:
             x = l.fun(*l.args, **l.kwargs)(x)
             shapes.append((l.name, x.shape))
 
+            for k, v in self._lvals.items():
+                print(k[0], v.shape)
+
             if l.undo:
+                print('in undo')
                 # need to crop and concatenate
-                cropped_prev = self._match_size(self._lvals[(lvl, False)], x)
-                x = tf.concat([cropped_prev, x], 3)
+                # cropped_prev = self._match_size(self._lvals[(lvl, False)], x)
+                x = tf.keras.layers.concatenate([self._lvals[(lvl, False)], x], 3)
 
             self._lvals[(lvl, l.undo)] = x
 
@@ -48,7 +53,7 @@ class UNet:
         self.res = tf.keras.layers.Reshape(tuple(target_shape))(x)
         '''
         self.res = x
-        
+
         return self.res
 
     def _match_size(self, layer1, layer2):
@@ -60,7 +65,7 @@ class UNet:
         return tf.slice(layer1, offsets, sizes)
 
     def train(self, X_train, y_train, optimizer='adam', loss='mean_squared_error', metrics=['mse'], epochs=1):
-        
+
         ## example from https://keras.io/callbacks/
         class LossHistory(tf.keras.callbacks.Callback):
             def on_train_begin(self, logs={}):
@@ -68,17 +73,17 @@ class UNet:
 
             def on_batch_end(self, batch, logs={}):
                 self.losses.append(logs.get('loss'))
-                
+
         history = LossHistory()
-        
+
         self._model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
         self._model.fit(x=X_train, y=y_train, callbacks=[history], epochs=epochs)
-        
+
         return history
 
     def eval(self, inputs):
         return self.model(inputs)
-    
+
     def predict(self, inputs):
         return self.model.predict(inputs)
 
