@@ -1,17 +1,25 @@
 import tensorflow as tf
 
-def res_block(Conv1, Conv2=None):
+def res_block(Conv1, Conv2=None, use_pool=True):
     def _res_block_helper(x, resblocks=[]):
         if len(resblocks) > 0:
             # init first block
             resblock = resblocks[0]
             resblocks = resblocks[1:]
             c1 = Conv1(x)
-            m1 = tf.keras.layers.MaxPool2D(pool_size=(2, 2), padding='same')(c1)
+            
+            if(use_pool):
+                m1 = tf.keras.layers.MaxPool2D(pool_size=(2, 2), padding='same')(c1)
+            else:
+                m1 = c1
             
             # init outputs of first block
             rb1 = resblock(m1, resblocks)
-            up1 = tf.keras.layers.UpSampling2D(size=(2, 2))(rb1)
+            
+            if(use_pool):
+                up1 = tf.keras.layers.UpSampling2D(size=(2, 2))(rb1)
+            else:
+                up1 = rb1
             
             # combine output of first block, incoming resnet outputs
             concatenated_input = tf.keras.layers.concatenate([up1, x], 3)
