@@ -22,3 +22,19 @@ def res_block(Conv1, Conv2=None):
 
 def gen_conv(filters, kernel_size, strides=(1, 1), padding='same', activation='relu', **kwargs):
     return tf.keras.layers.Conv2D(filters=filters, kernel_size=kernel_size, strides=strides, padding=padding, activation=activation, **kwargs)
+
+
+def gen_conv_bn_relu(**kwargs):               
+    
+    layers = [
+        gen_conv(**kwargs),
+        tf.keras.layers.BatchNormalization(),
+        tf.keras.layers.Activation('relu')
+    ]
+    
+    def gen_layers(x):
+        for layer in layers:
+            x = layer(x)            
+        return x
+    
+    return gen_layers
