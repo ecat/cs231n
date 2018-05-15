@@ -31,13 +31,13 @@ def gen_conv(filters, kernel_size, strides=(1, 1), padding='same', **kwargs):
     return tf.keras.layers.Conv2D(filters=filters, kernel_size=kernel_size, strides=strides, padding=padding, activation='linear', **kwargs)
 
 def gen_conv_relu(N=1, **kwargs):
-    layers = [
-        gen_conv(**kwargs),
-        tf.keras.layers.Activation('relu')
-    ]
     
     def gen_layers(x): 
-        for _ in range(N):
+        for ii in range(N):
+            layers = [ # need to define layers within function because you can't reuse them between N
+                gen_conv(**kwargs),
+                tf.keras.layers.Activation('relu')
+            ]
             for layer in layers:
                 x = layer(x)
         return x
@@ -47,14 +47,13 @@ def gen_conv_relu(N=1, **kwargs):
 
 def gen_conv_bn_relu(N=1, **kwargs):               
     
-    layers = [
-        gen_conv(**kwargs),
-        tf.keras.layers.BatchNormalization(),
-        tf.keras.layers.Activation('relu')
-    ]    
-    
     def gen_layers(x):
-        for _ in range(N):
+        for ii in range(N):
+            layers = [
+                gen_conv(**kwargs),
+                tf.keras.layers.BatchNormalization(),
+                tf.keras.layers.Activation('relu')
+            ]                
             for layer in layers:
                 x = layer(x)            
         return x

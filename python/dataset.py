@@ -43,4 +43,9 @@ def transform_image(im_ref, im_us, which_transform):
         
     return (im_ref_tf, im_us_tf)
     
+def augment_channel_image(im_us):
+    N, H, W, C = im_us.shape
+    
+    im_roll = np.roll(im_us, W//2, axis=2)
+    return np.concatenate((im_us, im_roll), axis=3)
     
