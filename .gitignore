@@ -1,6 +1,7 @@
 *~
 *.zip
 data/
+data2/
 models/
 figures/
 .ipynb_checkpoints/
