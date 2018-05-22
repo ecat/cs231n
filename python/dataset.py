@@ -13,43 +13,59 @@ class Transform(IntEnum):
     
 class MRImageSequence(tf.keras.utils.Sequence):
     
-    def __init__(self, scan_number, batch_size, augment_channels=False):
+    def __init__(self, scan_numbers, batch_size, augment_channels=False):
+        '''
+            scan_numbers must be a list
+        '''
         
-        im_ref, im_us = get_dataset(scan_number)
+        self.x_transformed = {} # start off with no transformation
+        self.y_transformed = {}
+        self.scan_numbers = scan_numbers
         
-        if (augment_channels == True):
-            im_us = augment_channel_image(im_us)
+        # load data
+        for scan_idx, scan_number in enumerate(self.scan_numbers):
+            im_ref, im_us = get_dataset(scan_number)
         
-        self.x_ref = im_us
-        self.y_ref = im_ref        
+            if (augment_channels == True):
+                im_us = augment_channel_image(im_us)
+            
+            print('X shape: ', im_us.shape)
+            print('y shape: ',im_ref.shape)
+            
+            self.x_transformed[scan_idx] = im_us
+            self.y_transformed[scan_idx] = im_ref
         
-        self.x_transformed = im_us.copy() # start off with no transformation
-        self.y_transformed = im_ref.copy()
+                
         self.batch_size = batch_size
         self.epoch_number = 0
-        
-        print('X size: ', self.x_ref.shape)
-        print('y size: ', self.y_ref.shape)
+        self.slices_in_volume = im_ref.shape[0]        
 
     def __len__(self):
-        return int(np.ceil((self.x_ref.shape[0]) / float(self.batch_size)))
+        return len(self.scan_numbers) * int(np.ceil((self.slices_in_volume) / float(self.batch_size)))
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx):                
         
-        idx_min = idx * self.batch_size
-        idx_max = (idx + 1) * self.batch_size
-        
-        batch_x = self.x_transformed[idx_min:idx_max, :, :, :]
-        batch_y = self.y_transformed[idx_min:idx_max, :, :, :]
+        scan_idx = int(np.floor(float(idx) * self.batch_size / self.slices_in_volume)) # generate a number between 0, number of scans
 
+        idx_min = (idx * self.batch_size) - (self.slices_in_volume * scan_idx)  # generate a number between 0, slices_in_volume inclusive
+        idx_max = ((idx + 1) * self.batch_size) - (self.slices_in_volume * scan_idx)
+                
+        batch_x = self.x_transformed[scan_idx][idx_min:idx_max, :, :, :]
+        batch_y = self.y_transformed[scan_idx][idx_min:idx_max, :, :, :]
+        
+        print(scan_idx, idx_min, idx_max)
+        
         return batch_x, batch_y
     
     def on_epoch_end(self):
-        
         # augment dataset with transform
         self.epoch_number += 1
         
-        self.x_transformed, self.y_transformed = transform_image(self.x_transformed, self.y_transformed, self.epoch_number % 4) # lazy transform, do a copy, could technically do it inplace
+        # alternating between horizontal flips and vertical flips covers all possible transformations
+        transformation = self.epoch_number % 2 + 1
+        
+        for scan_idx, scan_number in enumerate(self.scan_numbers):
+            self.x_transformed[scan_idx], self.y_transformed[scan_idx] = transform_image(self.x_transformed[scan_idx], self.y_transformed[scan_idx], transformation) # lazy transform lets us do it in-place
         
         
     
@@ -74,6 +90,7 @@ def get_dataset(scan_number):
     
     im_ref = im_ref[:, :, :, np.newaxis] # put into format (samples, rows, cols, channels)
 
+   
     return (im_ref, im_us)
 
 def get_dataset2(scan_number, do_real=True):
