@@ -3,12 +3,56 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 import cfl as cfl # functions for reading raw mr files
 
-from enum import Enum
+from enum import IntEnum
 
-class Transform(Enum):
+class Transform(IntEnum):
+    NONE = 0
     FLIP_HOR = 1
     FLIP_VER = 2
     ROT_180 = 3
+    
+class MRImageSequence(tf.keras.utils.Sequence):
+    
+    def __init__(self, scan_number, batch_size, augment_channels=False):
+        
+        im_ref, im_us = get_dataset(scan_number)
+        
+        if (augment_channels == True):
+            im_us = augment_channel_image(im_us)
+        
+        self.x_ref = im_us
+        self.y_ref = im_ref        
+        
+        self.x_transformed = im_us.copy() # start off with no transformation
+        self.y_transformed = im_ref.copy()
+        self.batch_size = batch_size
+        self.epoch_number = 0
+        
+        print('X size: ', self.x_ref.shape)
+        print('y size: ', self.y_ref.shape)
+
+    def __len__(self):
+        return int(np.ceil((self.x_ref.shape[0]) / float(self.batch_size)))
+
+    def __getitem__(self, idx):
+        
+        idx_min = idx * self.batch_size
+        idx_max = (idx + 1) * self.batch_size
+        
+        batch_x = self.x_transformed[idx_min:idx_max, :, :, :]
+        batch_y = self.y_transformed[idx_min:idx_max, :, :, :]
+
+        return batch_x, batch_y
+    
+    def on_epoch_end(self):
+        
+        # augment dataset with transform
+        self.epoch_number += 1
+        
+        self.x_transformed, self.y_transformed = transform_image(self.x_transformed, self.y_transformed, self.epoch_number % 4) # lazy transform, do a copy, could technically do it inplace
+        
+        
+    
 
 def get_dataset(scan_number):
     '''
@@ -16,6 +60,8 @@ def get_dataset(scan_number):
     im_ref is a coil comabined image, is size (N, H, W, 1)
     im_us is 2x undersampled real images, is size (N, H, W, C)
     '''
+    print('loading scan ', scan_number)
+    
     data_dir = 'data/'
     filename_ref = 'scan' + str(scan_number) + '_real_ref'
     filename_us = 'scan' + str(scan_number) + '_real_us'
@@ -67,7 +113,10 @@ def get_dataset2(scan_number, do_real=True):
 
 def transform_image(im_ref, im_us, which_transform):
     
-    if which_transform == Transform.FLIP_HOR:
+    if which_transform == Transform.NONE: # do nothing
+        im_ref_tf = im_ref
+        im_us_tf = im_us
+    elif which_transform == Transform.FLIP_HOR:
         im_ref_tf = np.flip(im_ref, axis=2) # flip along undersampling dimension
         im_us_tf = np.flip(im_us, axis=2)
     elif which_transform == Transform.FLIP_VER:
