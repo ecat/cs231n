@@ -45,6 +45,9 @@ def res_block(Block1, Block2=None, use_pool=True):
 def gen_conv(filters, kernel_size, strides=(1, 1), padding='same', **kwargs):
     return tf.keras.layers.Conv2D(filters=filters, kernel_size=kernel_size, strides=strides, padding=padding, activation='linear', **kwargs)
 
+def get_gen_conv_fn(use_bn):
+    return gen_conv_bn_relu if use_bn else gen_conv_relu
+
 def gen_conv_relu(N=1, **kwargs):
 
     def gen_layers(x):

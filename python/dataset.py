@@ -13,7 +13,7 @@ class Transform(IntEnum):
     
 class MRImageSequence(tf.keras.utils.Sequence):
     
-    def __init__(self, scan_numbers, batch_size, augment_channels=False):
+    def __init__(self, scan_numbers, batch_size, augment_channels=False, augment_images=False):
         '''
             scan_numbers must be a list
         '''
@@ -30,7 +30,7 @@ class MRImageSequence(tf.keras.utils.Sequence):
                 im_us = augment_channel_image(im_us)
             
             print('X shape: ', im_us.shape)
-            print('y shape: ',im_ref.shape)
+            print('y shape: ', im_ref.shape)
             
             self.x_transformed[scan_idx] = im_us
             self.y_transformed[scan_idx] = im_ref
@@ -38,7 +38,11 @@ class MRImageSequence(tf.keras.utils.Sequence):
                 
         self.batch_size = batch_size
         self.epoch_number = 0
-        self.slices_in_volume = im_ref.shape[0]        
+        self.slices_in_volume = im_ref.shape[0]     
+        self.augment_images = augment_images
+        
+        
+        print('augment_images: ', self.augment_images)
 
     def __len__(self):
         return len(self.scan_numbers) * int(np.ceil((self.slices_in_volume) / float(self.batch_size)))
@@ -53,19 +57,18 @@ class MRImageSequence(tf.keras.utils.Sequence):
         batch_x = self.x_transformed[scan_idx][idx_min:idx_max, :, :, :]
         batch_y = self.y_transformed[scan_idx][idx_min:idx_max, :, :, :]
         
-        print(scan_idx, idx_min, idx_max)
-        
         return batch_x, batch_y
     
     def on_epoch_end(self):
         # augment dataset with transform
         self.epoch_number += 1
         
-        # alternating between horizontal flips and vertical flips covers all possible transformations
-        transformation = self.epoch_number % 2 + 1
-        
-        for scan_idx, scan_number in enumerate(self.scan_numbers):
-            self.x_transformed[scan_idx], self.y_transformed[scan_idx] = transform_image(self.x_transformed[scan_idx], self.y_transformed[scan_idx], transformation) # lazy transform lets us do it in-place
+        if (self.augment_images == True):
+            # alternating between horizontal flips and vertical flips covers all possible transformations
+            transformation = self.epoch_number % 2 + 1
+
+            for scan_idx, scan_number in enumerate(self.scan_numbers):
+                self.x_transformed[scan_idx], self.y_transformed[scan_idx] = transform_image(self.x_transformed[scan_idx], self.y_transformed[scan_idx], transformation) # lazy transform lets us do it in-place
         
         
     
