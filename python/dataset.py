@@ -69,9 +69,31 @@ class MRImageSequence(tf.keras.utils.Sequence):
 
             for scan_idx, scan_number in enumerate(self.scan_numbers):
                 self.x_transformed[scan_idx], self.y_transformed[scan_idx] = transform_image(self.x_transformed[scan_idx], self.y_transformed[scan_idx], transformation) # lazy transform lets us do it in-place
+''' end MRImageSequence '''        
         
-        
+## example from https://keras.io/callbacks/
+class LossHistory(tf.keras.callbacks.Callback):
     
+    def __init__(self, test_data = None):
+        self.test_data = test_data
+        self.skip = 9 
+    
+    def on_train_begin(self, logs={}):
+        self.train_losses_batch = []
+        self.train_losses_epoch = []
+        self.test_losses = []
+
+    def on_batch_end(self, batch, logs={}):
+        self.train_losses_batch.append(logs.get('loss'))
+        
+    def on_epoch_end(self, epochs, logs={}):
+        self.train_losses_epoch.append(logs.get('loss'))
+        
+        if (epochs % self.skip == 0 and self.test_data != None):
+            x, y = self.test_data
+            loss, _ = self.model.evaluate(x, y, verbose=0)
+            self.test_losses.append(loss)
+''' end LossHistory '''                
 
 def get_dataset(scan_number):
     '''

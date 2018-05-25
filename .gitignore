@@ -1,5 +1,6 @@
 *~
 *.zip
+*.pyc
 data/
 data2/
 models/

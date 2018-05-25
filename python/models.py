@@ -43,6 +43,7 @@ def get_kaist_unet(inputs, use_bn=False):
     
     print('get_kaist_unet')
     print('use_pool: ', True)
+    print('use_bn: ', use_bn)
     print('gen_fn: ', gen_fn.__name__)
 
     # big unet, keep it verbose instead of using get_unet so that we have something to reference and debug against
