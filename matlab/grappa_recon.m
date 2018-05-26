@@ -44,6 +44,6 @@ for ii = 1:nx
 end
 
 %%
-img_recon = img_recon / mean(img_recon(:));
-img_ref = img_ref / mean(img_ref(:));
-figure; imshow3s(permute(cat(2, img_recon, img_ref, abs(img_recon - img_ref)), [2 3 1]))
+img_recon_ax = permute(img_recon / mean(img_recon(:)), [2 3 1]);
+img_ref_ax = permute(img_ref / mean(img_ref(:)), [2 3 1]);
+figure; imshow3s(cat(2, img_recon_ax, img_ref_ax, abs(img_recon_ax - img_ref_ax)))
