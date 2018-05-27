@@ -1,4 +1,5 @@
 import tensorflow as tf
+import numpy as np
 
 def res_block(Block1, Block2=None, use_pool=True):
     '''
@@ -77,3 +78,36 @@ def gen_conv_bn_relu(N=1, **kwargs):
         return x
 
     return gen_layers
+
+
+def gen_conv_nobias(N=1, **kwargs):
+
+    def gen_layers(x):
+        for ii in range(N):
+            layers = [ # need to define layers within function because you can't reuse them between N
+                gen_conv(use_bias=False, **kwargs)]
+            for layer in layers:
+                x = layer(x)
+        return x
+
+    return gen_layers
+
+
+def receptive_fov(inputs, output):
+    input_shape = [int(i) for i in inputs.shape[1:]]
+    model = tf.keras.models.Model(inputs=inputs, outputs=output)
+    v = np.zeros(input_shape)
+    a, b = v.shape[0:2]
+    c = v.shape[2]
+    # impulse image
+    v[a // 2, b // 2, :] = np.ones((c,))
+    sh = list(input_shape)
+    sh = [1] + sh
+    v = v.reshape(sh)
+    t = model.predict(v)
+    _, rows, cols, _ = np.nonzero(t)
+    rdim = int(max(rows) - min(rows))
+    cdim = int(max(cols) - min(cols))
+    assert rdim == cdim, "Expecting a square but got ({}, {}). Could be random initialization issue, try rerunning.".format(rdim, cdim)
+
+    return rdim
