@@ -7,3 +7,4 @@ models/
 figures/
 .ipynb_checkpoints/
 *.nbconvert.ipynb
+python/Spotlight*

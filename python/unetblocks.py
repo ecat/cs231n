@@ -1,5 +1,6 @@
 import tensorflow as tf
 import numpy as np
+from layers import LayerNorm1D
 
 def res_block(Block1, Block2=None, use_pool=True):
     '''
@@ -46,8 +47,15 @@ def res_block(Block1, Block2=None, use_pool=True):
 def gen_conv(filters, kernel_size, strides=(1, 1), padding='same', **kwargs):
     return tf.keras.layers.Conv2D(filters=filters, kernel_size=kernel_size, strides=strides, padding=padding, activation='linear', **kwargs)
 
-def get_gen_conv_fn(use_bn):
-    return gen_conv_bn_relu if use_bn else gen_conv_relu
+def get_gen_conv_fn(norm):
+    if norm is None:
+        return gen_conv_relu
+    elif norm == 'batch':
+        return gen_conv_bn_relu
+    elif norm == 'layer':
+        return gen_conv_ln_relu
+    else:
+        raise NotImplementedError("Unhandled normalization case: {}".format(norm))
 
 def gen_conv_relu(N=1, **kwargs):
 
@@ -71,6 +79,22 @@ def gen_conv_bn_relu(N=1, **kwargs):
             layers = [
                 gen_conv(**kwargs),
                 tf.keras.layers.BatchNormalization(),
+                tf.keras.layers.Activation('relu')
+            ]
+            for layer in layers:
+                x = layer(x)
+        return x
+
+    return gen_layers
+
+
+def gen_conv_ln_relu(N=1, **kwargs):
+
+    def gen_layers(x):
+        for ii in range(N):
+            layers = [
+                gen_conv(**kwargs),
+                LayerNorm1D(),
                 tf.keras.layers.Activation('relu')
             ]
             for layer in layers:

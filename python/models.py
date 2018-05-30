@@ -1,13 +1,13 @@
 import tensorflow as tf
 from unetblocks import res_block, get_gen_conv_fn, gen_conv_nobias, receptive_fov
 
-def get_very_small_unet(inputs, use_pool, use_bn=False, get_fov=False):
+def get_very_small_unet(inputs, use_pool, norm=None, get_fov=False):
     '''
     inputs is a keras layer that can be created with
     inputs = tf.keras.layers.Input(shape=input_shape)
     '''
 
-    gen_fn = get_gen_conv_fn(use_bn)
+    gen_fn = get_gen_conv_fn(norm)
 
     print('get_very_small_unet')
     print('use_pool:', use_pool)
@@ -27,9 +27,9 @@ def get_very_small_unet(inputs, use_pool, use_bn=False, get_fov=False):
 
     return out, fov
 
-def get_small_unet(inputs, use_bn=False, get_fov=False):
+def get_small_unet(inputs, norm=None, get_fov=False):
 
-    gen_fn = get_gen_conv_fn(use_bn)
+    gen_fn = get_gen_conv_fn(norm)
 
     print('get_small_unet')
     print('use_pool: ', True)
@@ -53,13 +53,13 @@ def get_small_unet(inputs, use_bn=False, get_fov=False):
 
     return out, fov
 
-def get_kaist_unet(inputs, use_bn=False, get_fov=False):
+def get_kaist_unet(inputs, norm=None, get_fov=False):
 
-    gen_fn = get_gen_conv_fn(use_bn)
+    gen_fn = get_gen_conv_fn(norm)
 
     print('get_kaist_unet')
     print('use_pool: ', True)
-    print('use_bn: ', use_bn)
+    print('norm: ', norm)
     print('gen_fn: ', gen_fn.__name__)
 
     # big unet, keep it verbose instead of using get_unet so that we have something to reference and debug against
@@ -82,11 +82,11 @@ def get_kaist_unet(inputs, use_bn=False, get_fov=False):
 
     return out, fov
 
-def get_unet(inputs, unet_shape, use_pool=True, use_bn=False, get_fov=False):
+def get_unet(inputs, unet_shape, use_pool=True, norm=None, get_fov=False):
     # unet_shape is a list of tuples
     # example: get_unet(inputs, [(2, 16), (3, 32)], use_pool=True)
 
-    gen_fn = get_gen_conv_fn(use_bn)
+    gen_fn = get_gen_conv_fn(norm)
 
     print('get_unet')
     print('use_pool: ', use_pool)
