@@ -1,6 +1,6 @@
 import tensorflow as tf
 import numpy as np
-from layers import LayerNorm2D
+from layers import LayerNorm2DPerChannel
 
 def res_block(Block1, Block2=None, use_pool=True):
     '''
@@ -94,7 +94,7 @@ def gen_conv_ln_relu(N=1, **kwargs):
         for ii in range(N):
             layers = [
                 gen_conv(**kwargs),
-                LayerNorm2D(),
+                LayerNorm2DPerChannel(),
                 tf.keras.layers.Activation('relu')
             ]
             for layer in layers:
