@@ -8,8 +8,8 @@ data_path = 'data/scan2/kspace';
 ksp = readReconData(data_path);
 img = sos(ifft3c(ksp), 4);
 
-slice_to_show = 120;
-slice = img(:, :, slice_to_show);
+slice_to_show = 160;
+slice = squeeze(img(slice_to_show, :, :));
 
 %%
 figure; 
@@ -36,7 +36,7 @@ print('figures/figure2', '-dpng')
 
 
 %% Figure 3 PSFs for CS, PI
-
+arc_mask = get_arc_mask(128, 128, 1, 2, 10, -1);
 line_arc = arc_mask(64, :)';
 line_cpd = cpd_mask(64, :, 1)';
 
@@ -75,8 +75,9 @@ print('figures/figure4', '-dpng')
 %% Figure 5 coil image montage
 coil_ims = ifft3c(ksp);
 
-coil_slice_ims = abs(coil_ims(:, :, slice_to_show, :));
+coil_slice_ims = squeeze(abs(coil_ims(slice_to_show, :, :, :)));
 coil_slice_ims = coil_slice_ims/max(abs(coil_slice_ims(:)));
+coil_slice_ims = reshape(coil_slice_ims, [nx, ny, 1, nc]);
 
 figure;
 montage(coil_slice_ims, 'Size', [2 4])
