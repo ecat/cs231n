@@ -1,6 +1,6 @@
 import tensorflow as tf
 import numpy as np
-from layers import LayerNorm2D
+from layers import LayerNorm2DPerChannel
 
 def res_block(Block1, Block2=None, use_pool=True):
     '''
@@ -16,20 +16,20 @@ def res_block(Block1, Block2=None, use_pool=True):
             resblocks = resblocks[1:]
 
             c1 = Block1(x)
-            
+
             if(use_pool):
                 m1 = tf.keras.layers.MaxPool2D(pool_size=(2, 2), padding='same')(c1)
             else:
                 m1 = c1
-            
+
             # init outputs of first block
             rb1 = resblock(m1, resblocks)
-            
+
             if(use_pool):
                 up1 = tf.keras.layers.UpSampling2D(size=(2, 2))(rb1)
             else:
                 up1 = rb1
-            
+
             # combine output of first block, incoming resnet outputs
             concatenated_input = tf.keras.layers.concatenate([up1, x], 3)
 
@@ -94,7 +94,7 @@ def gen_conv_ln_relu(N=1, **kwargs):
         for ii in range(N):
             layers = [
                 gen_conv(**kwargs),
-                LayerNorm2D(),
+                LayerNorm2DPerChannel(),
                 tf.keras.layers.Activation('relu')
             ]
             for layer in layers:
